@@ -1,3 +1,3 @@
 # TrumpTweetMapper
 
-![](https://media.giphy.com/media/623NrhLVhlSYSjIJSj/giphy.gif)
+![](https://imgur.com/gP6Lt0i)
