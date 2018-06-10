@@ -1,0 +1,26 @@
+import React from 'react';
+import {csv} from 'd3-fetch';
+import MapComponent from './map-component';
+
+class RootComponent extends React.Component {
+  componentWillMount() {
+    // if the data you are going to import is small, then you can import it using es6 import
+    // import MY_DATA from './data/example.json'
+    // (I tend to think it's best to use screaming snake case for imported json)
+    csv('data/data.csv')
+      .then(data => this.setState({
+        myData: data,
+      }));
+  }
+
+  render() {
+    return (
+      <div className="flex center flex-column">
+        <h1>P2 SCAFFOLD - REACT ROOT</h1>
+        <MapComponent />
+      </div>
+    );
+  }
+}
+RootComponent.displayName = 'RootComponent';
+export default RootComponent;

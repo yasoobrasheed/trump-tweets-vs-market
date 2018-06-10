@@ -1,0 +1,32 @@
+import React from 'react';
+import {Jumbotron} from 'react-bootstrap';
+import {Well} from 'react-bootstrap';
+
+
+class TweetDisplay extends React.Component {
+  constructor(props){
+    super(props)
+  }
+
+  render() {
+
+  const jumboWidth = {width:800}
+
+  const tweets = (
+    this.props.tweetsTest.map((tweet) => 
+      <Well bsSize="large">{tweet}</Well>
+    )    
+    );
+
+    return (
+      <div>
+      <Jumbotron style={jumboWidth} className="text-center">
+        <h2>{this.props.text}</h2>
+        {tweets}
+      </Jumbotron>
+      </div>
+    );
+  }
+}
+TweetDisplay.displayName = 'TweetDisplay';
+export default TweetDisplay;

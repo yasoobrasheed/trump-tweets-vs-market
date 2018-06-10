@@ -1,0 +1,253 @@
+import React from 'react';
+
+import {scaleTime, scaleLinear} from 'd3-scale';
+import {select, event} from 'd3-selection';
+import {axisBottom, axisLeft} from 'd3-axis';
+import {zoom, zoomIdentity} from 'd3-zoom';
+import {findMinMax, searchTweets} from '../utils';
+import trumpData from '../../scripts/formattedTrump.json';
+import {brushX} from 'd3-brush';
+
+class BarChart extends React.Component {
+  constructor(props) {
+    super(props);
+
+    const margin = {top: 20, right: 20, bottom: 110, left: 40};
+    const margin2 = {top: 430, right: 20, bottom: 30, left: 40};
+    const width = this.props.width - margin.left - margin.right;
+    const height = this.props.height - margin.top - margin.bottom;
+    const height2 = this.props.height - margin2.top - margin2.bottom;
+
+    this.state = {updateTweet: this.props.tweetUpdate,
+      widthDef: this.props.width,
+      index: this.props.index,
+      heightDef: this.props.height,
+      margin,
+      margin2,
+      height,
+      height2,
+      width,
+      searchText: this.props.searchText,
+      curDate: this.props.curDate,
+      clickedBar: null};
+
+    this.createBarChart = this.createBarChart.bind(this);
+  }
+
+  componentDidMount() {
+    this.createBarChart();
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+
+    if ((nextState.clickedBar === this.state.clickedBar) &&
+       (this.state.searchText !== nextProps.searchText)) {
+      return true;
+    } else if (this.props.zoom !== nextProps.zoom) {
+      const zoomRect = document.getElementById('zoom-rect');
+      if (this.props.zoom) {
+        zoomRect.setAttribute('style', 'fill:none; pointer-events:none');
+      } else {
+        zoomRect.setAttribute('style', 'fill:none; pointer-events:all');
+      }
+      return false;
+    } else if ((nextProps.curDate !== this.state.curDate) && (nextProps.index === this.state.index)) {
+      return false;
+    } else if (nextState.clickedBar !== this.state.clickedBar) {
+      return false;
+    } else if (nextProps.index === this.state.index) {
+      return false;
+    }
+
+    return true;
+
+  }
+  componentDidUpdate() {
+      // re render graph with new data
+    const svg = document.getElementById('chart-container');
+    svg.childNodes.forEach((node) => svg.removeChild(node));
+    this.createBarChart();
+  }
+
+  getChartFunctions(brushed, zoomed) {
+
+    const {width, height2, height} = this.state;
+
+    const stats = findMinMax(this.props.data, this.props.index);
+    const max = stats.max;
+    const min = stats.min;
+
+    const x = scaleTime().domain([new Date('2017-01-20'), new Date('2018-05-25')])
+                               .range([0, width]);
+    const x2 = scaleTime().domain([new Date('2017-01-20'), new Date('2018-05-25')])
+                               .range([0, width]);
+
+    const y = scaleLinear().domain([min, max]).range([height, 0]);
+    const y2 = scaleLinear().domain([min, max]).range([height2, 0]);
+
+    const xAxis = axisBottom(x);
+    const xAxis2 = axisBottom(x2);
+    const yAxis = axisLeft(y);
+
+    const brush1 = brushX().extent([[0, 0], [width, height2]])
+                          .on('brush end', brushed);
+
+    const zoom1 = zoom()
+      .scaleExtent([1, Infinity])
+      .translateExtent([[0, 0], [width, height]])
+      .extent([[0, 0], [width, height]])
+      .on('zoom', zoomed);
+
+    return {x, x2, y, y2, xAxis, xAxis2, yAxis, brush1, zoom1};
+
+  }
+
+  createBarChart() {
+
+    const {margin, margin2, width,
+           height, height2} = this.state;
+
+    this.setState({index: this.props.index, searchText: this.props.searchText});
+    const dates = searchTweets(trumpData, this.props.searchText);
+
+    const index = this.props.index;
+
+    const {x, x2, y, y2, xAxis, xAxis2, yAxis, brush1, zoom1} = this.getChartFunctions(brushed, zoomed);
+
+    const svg = select(this.node);
+
+    svg.append('defs').append('clipPath')
+      .attr('id', 'clip')
+      .append('rect')
+      .attr('width', width)
+      .attr('height', height);
+
+    const focus = svg.append('g').attr('class', 'focus')
+                                .attr('transform', `translate(${margin.left},${margin.top})`);
+
+    const context = svg.append('g').attr('class', 'context')
+                                  .attr('transform', `translate(${margin2.left},${margin2.top})`);
+
+    const bars = focus.append('g');
+    bars.attr('clip-path', 'url(#clip)');
+
+    bars.selectAll('.bars').data(this.props.data).enter()
+      .append('rect')
+      .attr('class', 'bars')
+      .attr('id', (d, i) => `${i}`)
+      .attr('x', day => x(new Date(day.DATE)))
+      .attr('y', day => y(parseFloat(day[index])))
+      .attr('width', '4')
+      .attr('height', day => height - y(day[index]))
+      .attr('fill', day => (dates.includes(day.DATE) & this.props.searchText !== '') ? '#ff9900' : '#87C3FF')
+      .on('mouseover', (d, i) => {
+        const bar1 = document.getElementById(`${i}`);
+        if (this.state.clickedBar) {
+          const bar2 = document.getElementById(`${this.state.clickedBar}`);
+          bar2.setAttribute('fill', '#87C3FF');
+        }
+        this.setState({clickedBar: i});
+        bar1.setAttribute('fill', '#ff9900');
+        this.props.changeDate(d.DATE);
+      });
+
+    focus.append('g')
+      .attr('class', 'axis axis--x')
+      .attr('transform', `translate(0, ${height})`)
+      .call(xAxis);
+
+    focus.append('g')
+      .attr('class', 'axis axis--y')
+      .call(yAxis);
+
+    const bars2 = context.append('g');
+    bars2.attr('clip-path', 'url(#clip)');
+
+    bars2.selectAll('.barsContext').data(this.props.data).enter()
+      .append('rect')
+      .attr('class', 'barsContext')
+      .attr('x', day => x2(new Date(day.DATE)))
+      .attr('y', day => y2(parseFloat(day[index])))
+      .attr('width', `${(width + 3000) / width}`)
+      .attr('height', day => height2 - y2(day[index]))
+      .attr('fill', '#87C3FF');
+
+    context.append('g')
+      .attr('class', 'axis axis--x')
+      .attr('transform', `translate(0, ${height2})`)
+      .call(xAxis2);
+    context.append('g')
+      .attr('class', 'brush')
+      .call(brush1)
+      .call(brush1.move, x.range());
+
+    svg.append('rect')
+    .attr('class', 'zoom')
+    .attr('id', 'zoom-rect')
+    .attr('style', 'fill:none; pointer-events:none')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('transform', `translate(${ margin.left },${ margin.top })`)
+    .call(zoom1);
+
+    const zoomRect = document.getElementById('zoom-rect');
+    if (this.props.zoom) {
+      zoomRect.setAttribute('style', 'fill:none; pointer-events:all');
+    }
+
+    function brushed() {
+      if (event.sourceEvent && event.sourceEvent.type === 'zoom') {
+        return;
+      }
+      const selection1 = event.selection;
+      const top = selection1[1];
+      const bottom = selection1[0];
+      const dist = top - bottom;
+      const newWidth = (width + 3000) / dist;
+      x.domain(selection1.map(x2.invert, x2));
+      focus.selectAll('.bars')
+        .attr('x', d => x(new Date(d.DATE)))
+        .attr('y', d => y(d[index]))
+        .attr('width', newWidth);
+      focus.select('.axis--x').call(xAxis);
+      svg
+        .select('.zoom')
+        .call(zoom1.transform, zoomIdentity.scale(width / dist).translate(-bottom, 0));
+    }
+
+    function zoomed() {
+      if (event.sourceEvent && event.sourceEvent.type === 'brush') {
+        return;
+      }
+      const transform1 = event.transform;
+      const newDomain = transform1.rescaleX(x2).domain();
+      x.domain(newDomain);
+      const defaultX = scaleTime().domain([new Date('2017-01-20'), new Date('2018-05-25')])
+                                     .range([0, width]);
+      const top = defaultX(newDomain[1]);
+      const bottom = defaultX(newDomain[0]);
+      const dist = top - bottom;
+      const newWidth = (width + 3000) / dist;
+      focus.selectAll('.bars')
+        .attr('x', d => x(new Date(d.DATE)))
+        .attr('y', d => y(d[index]))
+        .attr('width', newWidth);
+      focus.select('.axis--x').call(xAxis);
+      context.select('.brush').call(brush1.move, x.range().map(transform1.invertX, transform1));
+
+    }
+
+  }
+
+  render() {
+    return (
+      <svg className="bar-chart"
+           width={this.state.widthDef}
+           height={this.state.heightDef}
+           ref={(node) => (this.node = node)}
+           id="chart-container" />
+    );
+  }
+}
+BarChart.displayName = 'BarChart';
+export default BarChart;

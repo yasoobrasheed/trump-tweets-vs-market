@@ -1,0 +1,71 @@
+import React from 'react';
+import {Jumbotron} from 'react-bootstrap';
+import {Well} from 'react-bootstrap';
+import {Media} from 'react-bootstrap';
+import ReactScrollbar from 'react-scrollbar-js'
+
+class TweetDisplay extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {searchText: this.props.searchText}
+  }
+
+  render() {
+
+  //const jumboWidth = {width:800}
+
+  const tweets = (
+      this.props.tweetsTest.map((tweet) =>
+        <div>
+          <Media>
+            <Media.Left>
+              <img width={100} height={100} src='trump.png' alt='trump' />
+            </Media.Left>
+            <Media.Body>
+              <Media.Heading> @realDonaldTrump </Media.Heading>
+              <p> {tweet} </p>
+            </Media.Body>
+          </Media>
+        </div>
+      //<Well bsSize="large">{tweet}</Well>
+    ));
+  console.log(this.props.tweetsTest)
+  const searchTweets = (
+      this.props.searchTweets.map((tweet) =>
+        <div>
+          <Media>
+            <Media.Left>
+              <img width={100} height={100} src='trump.png' alt='trump' />
+            </Media.Left>
+            <Media.Body>
+              <Media.Heading> @realDonaldTrump </Media.Heading>
+              <p> {tweet} </p>
+            </Media.Body>
+          </Media>
+        </div>
+      //<Well bsSize="large">{tweet}</Well>
+    ));
+    const scrollBar = {width: 1000, height:500};
+    console.log(this.props.searchText)
+    const displayTweets = (this.props.searchText !='') ? searchTweets : tweets
+
+    return (
+      <ReactScrollbar style={scrollBar}>
+        <div className='scrollBar'>
+          <p>
+          {displayTweets}
+          </p>
+        </div>
+      </ReactScrollbar>
+      /*
+      <Jumbotron style={jumboWidth} className="text-center">
+        <h2>{this.props.text}</h2>
+        {tweets}
+      </Jumbotron>
+      </div>
+      */
+    );
+  }
+}
+TweetDisplay.displayName = 'TweetDisplay';
+export default TweetDisplay;

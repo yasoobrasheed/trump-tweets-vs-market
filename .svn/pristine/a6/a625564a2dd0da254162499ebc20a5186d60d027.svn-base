@@ -1,0 +1,9 @@
+export function findMinMax(data, index){
+	return data.reduce((acc, day) => {
+		if(!isNaN(day[index])){
+			acc.max = Math.max(acc.max, parseInt(day[index]));
+			acc.min = Math.min(acc.min, parseInt(day[index]));
+		}
+		return acc;
+	}, {max:-Infinity, min:Infinity});
+}

@@ -1,0 +1,102 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BarZoom} from 'react-d3-zoom';
+
+import {scaleTime, scaleLinear} from 'd3-scale';
+import {select, selectAll, event} from 'd3-selection';
+import {axisBottom, axisLeft} from 'd3-axis';
+import {zoom} from 'd3-zoom';
+import {findMinMax} from '../utils';
+import trumpData from '../../scripts/formattedTrump.json'
+
+
+function searchTweets(text) {
+  var ret = []
+  trumpData.forEach((day) => {
+    day.tweets.forEach((tweet) => {
+      if(tweet.includes(text)) {
+        ret = ret.concat([(day.date)])
+      }
+    })
+  })
+  return ret
+}
+
+class BarChart extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {updateTweet: this.props.tweetUpdate,
+                  width: this.props.width,
+                  height: this.props.height,
+                  margin: this.props.margin,
+                  searchText: this.props.searchText,
+                  curDate: this.props.curDate};
+    this.xScale = scaleTime().domain([new Date("2017-01-20"), new Date("2018-05-25")])
+                               .range([this.props.margin.left + 30,990])
+    this.createBarChart = this.createBarChart.bind(this)
+
+  }
+
+   componentDidMount() {
+      this.createBarChart()
+   }
+   componentDidUpdate() {
+      //re render graph with new data
+      const svg = document.getElementById('test');
+      while(svg.hasChildNodes()){
+        svg.removeChild(svg.lastChild)
+      }
+      this.createBarChart()
+   }
+
+   createBarChart(){
+    const index = this.props.index;
+    const node = this.node;
+    const svg = select(node);
+    const stats = findMinMax(this.props.data, index);
+    const max = stats.max;
+
+    const yScale = scaleLinear().domain([0, max]).range([this.state.height,this.state.margin.bottom]);
+
+    const xAxis = axisBottom(this.xScale);
+    const yAxis = axisLeft(yScale);
+
+
+    const dates = searchTweets(this.props.searchText)
+
+    svg.selectAll('.bars').data(this.props.data).enter()
+      .append('rect')
+      .attr('x', day => this.xScale(new Date(day["DATE"])))
+      .attr('y', day => yScale(parseFloat(day[index])))
+      .attr('width', '1')
+      .attr('height', day => this.state.height - 50 - yScale(day[index]))
+      .on('click', d => this.props.changeDate(((d["DATE"]))))
+      //.on('click', this.props.changeText(""))
+      .attr('fill', day => (((this.props.searchText === "")&(this.props.curDate.valueOf() == (new Date(day["DATE"]).valueOf()))) |
+                          (dates.includes(day["DATE"]) &  this.props.searchText != ""))
+       ? 'red' :
+      '#87C3FF');
+    //console.log(this.props.curDate);
+
+//#003D7A
+
+    svg.call(zoom().on("zoom", function() {
+      svg.attr('transform', event.transform)
+    }));
+    const xAxisGroup = svg.append('g')
+        .attr('transform', `translate(0, ${this.props.height - 40})`).call(xAxis);
+
+    const yAxisGroup = svg.append('g')
+        .attr('transform', `translate(${4 * this.props.margin.left}, -40)`).call(yAxis);
+   }
+
+  render() {
+
+    return (
+      <svg width={this.state.width} height={this.state.height} ref={node => this.node = node} id='test'>
+      </svg>
+    );
+  }
+}
+BarChart.displayName = 'BarChart';
+export default BarChart;

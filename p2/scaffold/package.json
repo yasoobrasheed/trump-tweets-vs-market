@@ -1,0 +1,61 @@
+{
+  "name": "p2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "autoprefixer-loader": "^3.2.0",
+    "babel-core": "^6.21.0",
+    "babel-eslint": "^7.1.1",
+    "babel-loader": "^6.2.10",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-es2017": "^6.22.0",
+    "babel-preset-react": "^6.16.0",
+    "babel-preset-stage-2": "^6.22.0",
+    "eslint": "^3.13.1",
+    "eslint-config-uber-es2015": "^3.0.1",
+    "eslint-config-uber-jsx": "^3.0.1",
+    "eslint-plugin-babel": "^4.0.0",
+    "eslint-plugin-no-loops": "^0.3.0",
+    "eslint-plugin-react": "^6.10.0",
+    "request": "^2.81.0",
+    "webpack": "^2.2.0-rc.3",
+    "webpack-dev-server": "^2.2.0-rc.0"
+  },
+  "dependencies": {
+    "d3-axis": "^1.0.8",
+    "d3-brush": "^1.0.4",
+    "d3-fetch": "^1.1.0",
+    "d3-scale": "^2.0.0",
+    "d3-selection": "^1.3.0",
+    "d3-zoom": "^1.7.1",
+    "install": "^0.11.0",
+    "react": "^15.4.1",
+    "react-addons-shallow-compare": "^15.4.1",
+    "react-bar-chart": "^0.1.2",
+    "react-bootstrap": "^0.32.1",
+    "react-d3-zoom": "^1.1.2",
+    "react-dom": "^15.4.1",
+    "react-lightweight-tooltip": "^1.0.0",
+    "react-newline-to-break": "^1.0.6",
+    "react-scrollbar": "^0.5.4",
+    "react-scrollbar-js": "^1.0.1",
+    "react-toggle": "^4.0.2",
+    "tape": "^4.9.0",
+    "when": "^3.7.8"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --progress --hot --port 3003 --open",
+    "build": "NODE_ENV=production webpack",
+    "lint": "eslint ."
+  },
+  "babel": {
+    "presets": [
+      "es2015",
+      "stage-2",
+      "react"
+    ]
+  }
+}

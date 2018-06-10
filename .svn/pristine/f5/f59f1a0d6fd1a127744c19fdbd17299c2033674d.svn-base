@@ -1,0 +1,109 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BarZoom} from 'react-d3-zoom';
+
+import {scaleTime, scaleLinear} from 'd3-scale';
+import {select, selectAll, event} from 'd3-selection';
+import {axisBottom, axisLeft} from 'd3-axis';
+import {zoom} from 'd3-zoom';
+import {findMinMax} from '../utils';
+
+class BarChart extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {updateTweet: this.props.tweetUpdate,
+                  width: this.props.width,
+                  height: this.props.height,
+                  margin: this.props.margin};
+    this.xScale = scaleTime().domain([new Date("2017-01-20"), new Date("2018-05-25")])
+                               .range([this.props.margin.left + 30,990])
+    this.createBarChart = this.createBarChart.bind(this)
+
+  }
+
+   componentDidMount() {
+      this.createBarChart()
+   }
+   componentDidUpdate() {
+      //re render graph with new data
+      const svg = document.getElementById('test');
+      while(svg.hasChildNodes()){
+        svg.removeChild(svg.lastChild)
+      }
+      this.createBarChart()
+   }
+
+   createBarChart(){
+    const index = this.props.index;
+    const node = this.node;
+    const svg = select(node);
+    const stats = findMinMax(this.props.data, index);
+    const max = stats.max;
+
+    const yScale = scaleLinear().domain([0, max]).range([this.state.height,this.state.margin.bottom]);
+
+    const xAxis = axisBottom(this.xScale);
+    const yAxis = axisLeft(yScale);
+
+    svg.selectAll('.bars').data(this.props.data).enter()
+      .append('rect')
+      .attr('x', day => this.xScale(new Date(day["DATE"])))
+      .attr('y', day => yScale(parseFloat(day[index])))
+      .attr('width', '1')
+      .attr('height', day => this.state.height - 50 - yScale(day[index]))
+      .attr('fill', 'blue')
+      .on('click', d => this.props.changeDate(((d["DATE"]))));
+
+    svg.call(zoom().on("zoom", function() {
+      svg.attr('transform', event.transform)
+    }));
+    const xAxisGroup = svg.append('g')
+        .attr('transform', `translate(0, ${this.props.height - 40})`).call(xAxis);
+
+    const yAxisGroup = svg.append('g')
+        .attr('transform', `translate(${4 * this.props.margin.left}, -40)`).call(yAxis);
+
+  //   //add zoom
+  //   const ZOOM = zoom()
+  //         .scaleExtent([1,30])// less than 1 means can resize smaller than  original size
+  //         .translateExtent([[-this.props.width,-this.props.height],[2*this.props.width,2*this.props.height]])
+  //         .on("zoom",zoomed);
+  // function zoomed(){
+  //   svg.selectAll('.bars').attr("transform",event.transform);//move bar chart because we dont want to change the tick scale
+  //   xAxisGroup.call(xAxis.scale(event.transform.rescaleX(this.xScale)));//rescaleX - change the xScale domain with the transforming info
+  //   yAxisGroup.call(yAxis.scale(event.transform.rescaleY(yScale)));//rescaleY - change the yScale domain with the transforming info
+  // }
+  // svg.call(ZOOM);
+
+  // //add clip path to the svg
+
+  // svg.append("defs").append("clipPath").attr("id","clip")
+  //   .append("rect").attr("width",this.props.width).attr("height",this.props.height);
+  // svg.selectAll('.bars').attr("clip-path","url(#clip)");
+
+
+   }
+
+  render() {
+
+    // const bars = (
+    //   this.props.data.map((day) =>
+    //     <rect
+    //       x={this.xScale(new Date(day["DATE"]))}
+    //       y={yScale(parseFloat(day[index]))}
+    //       width="1"
+    //       height={this.state.height - yScale(day[index])}
+    //       fill="blue"
+    //       class="bar"
+    //       />,
+    //   )
+    //   );
+
+    return (
+      <svg width={this.state.width} height={this.state.height} ref={node => this.node = node} id='test'>
+      </svg>
+    );
+  }
+}
+BarChart.displayName = 'BarChart';
+export default BarChart;

@@ -1,0 +1,41 @@
+import React from 'react';
+import {FormGroup, FormControl, ControlLabel, Form, Button} from 'react-bootstrap';
+
+
+class SearchBar extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {
+      value: ''
+    };
+
+  }
+
+  render() {
+
+    return (
+      <Form inline onKeyPress={(e) => {
+          if (e.which === 13 ) {
+          e.preventDefault();
+    }}}>
+      <FormGroup controlId="formBasicText">
+        <ControlLabel>Search for a tweet</ControlLabel>
+        <FormControl
+          bsSize="lg"
+          type="text"
+          value={this.state.value}
+          placeholder="Enter Text"
+          onChange={(e) => this.setState({value : e.target.value})}
+        />
+        <FormControl.Feedback />
+      </FormGroup>
+      <Button onClick={() => {
+        this.props.changeText(this.state.value);
+        this.setState({value: ''});
+      }}><i className="fa fa-search"></i></Button>
+      </Form>
+    );
+  }
+}
+SearchBar.displayName = 'SearchBar';
+export default SearchBar;

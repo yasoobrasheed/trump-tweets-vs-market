@@ -1,0 +1,75 @@
+import React from 'react';
+//import {csv} from 'd3-fetch';
+
+const Chart = ({children, width, height}) => (
+  <svg
+    viewBox={`0 0 ${width} ${height}`}
+    width={width}
+    height={height}
+  >
+    {children}
+  </svg>
+)
+
+const Bar = ({x, y, width, height}) => (
+  <rect
+    x = {x}
+    y = {y}
+    width = {width}
+    height = {height}
+  />
+)
+
+const BarChart = ({data}) => {
+  const itemWidth = 20
+  const itemMargin = 5
+  const dataLength = data.length
+
+  const chartHeight = Math.max(...data.map(d => d.repos))
+
+  return (
+    <Chart
+      width = {dataLength * (itemWidth + itemMargin)}
+      height = {chartHeight}
+    >
+      {data.map((datum, i) => {
+        const itemHeight = datum.repos
+
+        return (
+          <Bar
+            key = {datum.name}
+            x = {i * (itemWidth + itemMargin)}
+            y = {chartHeight - itemHeight}
+            width = {itemWidth}
+            height = {itemHeight}
+          />
+        )
+      })}
+    </Chart>
+  )
+}
+
+BarChart.displayName = 'BarChart';
+export default BarChart;
+/*
+class RootComponent extends React.Component {
+  componentWillMount() {
+    // if the data you are going to import is small, then you can import it using es6 import
+    // import MY_DATA from './data/example.json'
+    // (I tend to think it's best to use screaming snake case for imported json)
+    csv('data/data.csv')
+      .then(data => this.setState({
+        myData: data,
+      }));
+  }
+
+  render() {
+    return (
+      <div className="flex center flex-column">
+        <h1>P2 SCAFFOLD - REACT ROOT</h1>
+        <MapComponent />
+      </div>
+    );
+  }
+}
+*/

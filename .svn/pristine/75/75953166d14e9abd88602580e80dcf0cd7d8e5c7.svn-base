@@ -1,0 +1,25 @@
+import json
+
+with open('trumpData.json') as f:
+    data = json.load(f)
+
+# {date: [tweets], etc.}
+keyData = {}
+for datum in data:
+    date = datum['created_at'].encode('ascii', 'ignore')
+    text = datum['text'].encode('ascii', 'ignore')
+
+    md = date[0:10]
+    y = date[26:30]
+
+    if (y == '2017'):
+        if md in keyData:
+            keyData[md].append(text)
+        else:
+            keyData[md] = []
+            keyData[md].append(text)
+
+# [{date: "", tweets: []}, etc.]
+organized = []
+for key in keyData:
+    organized.append({'date': key, 'tweets': keyData[key]})

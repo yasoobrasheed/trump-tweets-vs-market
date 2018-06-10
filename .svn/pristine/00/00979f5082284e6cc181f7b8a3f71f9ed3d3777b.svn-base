@@ -1,0 +1,123 @@
+import React from 'react';
+import spData from '../../scripts/SP500.json'
+//import {csv} from 'd3-fetch';
+// var dat = require('../../scripts/SP500.json')
+
+// function loadJSON(callback) {
+//
+//    var xobj = new XMLHttpRequest();
+//        xobj.overrideMimeType("application/json");
+//    xobj.open('GET', '../../scripts/SP500.json', false); // Replace 'my_data' with the path to your file
+//    xobj.onreadystatechange = function () {
+//          if (xobj.readyState == 4 && xobj.status == "200") {
+//            // Required use of an anonymous callback as .open will NOT return a value but simply returns undefined in asynchronous mode
+//            callback(xobj.responseText);
+//          }
+//    };
+//    xobj.send(null);
+// }
+//
+//
+// function init() {
+//  loadJSON(function(response) {
+//   // Parse JSON string into object
+//     var actual_JSON = response;
+//  });
+// }
+// var temp = init();
+
+
+const Chart = ({children, width, height}) => (
+  <svg
+    viewBox={`0 0 ${width} ${height}`}
+    width={width}
+    height={height}
+  >
+    {children}
+  </svg>
+)
+
+function handleClick() {
+    console.log('this is:', this);
+}
+
+const Bar = ({x, y, width, height, date}) => (
+  <rect
+    x = {x}
+    y = {y}
+    width = {width}
+    height = {height}
+    onClick={() => {
+          console.log(date)
+          //console.log("hi")
+          // selectedPcaColumns[col] = !selectedPcaColumns[col];
+          // this.setState({selectedPcaColumns});
+    }}
+  />
+)
+
+
+const BarChart = ({da}) => {
+  var data = spData;
+  const itemWidth = 20
+  const itemMargin = 5
+  const dataLength = data.length
+
+  const chartHeight = Math.max(...data.map(d => isNaN(parseFloat(d.SP500)) ? 0 : parseFloat(d.SP500)))
+
+  //console.log(chartHeight)
+
+  return (
+    <Chart
+      width = {dataLength * (itemWidth + itemMargin)}
+      height = {chartHeight}
+    >
+      {data.map((datum, i) => {
+        const itemHeight = isNaN(parseFloat(datum.SP500)) ? 0 : parseFloat(datum.SP500)
+
+        //console.log(itemHeight)
+        return (
+          <Bar
+            key = {datum.DATE}
+            x = {i * (itemWidth + itemMargin)}
+            y = {chartHeight - itemHeight}
+            width = {itemWidth}
+            height = {itemHeight}
+            date = {datum.DATE}
+            onClick={() => {
+                  this.handleClick
+                  //console.log("hi")
+                  // selectedPcaColumns[col] = !selectedPcaColumns[col];
+                  // this.setState({selectedPcaColumns});
+            }}
+          />
+        )
+      })}
+    </Chart>
+  )
+}
+
+BarChart.displayName = 'BarChart';
+export default BarChart;
+/*
+class RootComponent extends React.Component {
+  componentWillMount() {
+    // if the data you are going to import is small, then you can import it using es6 import
+    // import MY_DATA from './data/example.json'
+    // (I tend to think it's best to use screaming snake case for imported json)
+    csv('data/data.csv')
+      .then(data => this.setState({
+        myData: data,
+      }));
+  }
+
+  render() {
+    return (
+      <div className="flex center flex-column">
+        <h1>P2 SCAFFOLD - REACT ROOT</h1>
+        <MapComponent />
+      </div>
+    );
+  }
+}
+*/

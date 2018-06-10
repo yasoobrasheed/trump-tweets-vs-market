@@ -1,0 +1,97 @@
+
+//App.js
+import React from 'react';
+// Import Components
+import BarChart from './bar-chart';
+import Dropdown from './dropdown';
+import TweetDisplay from './tweet-display';
+import SearchBar from './search-bar';
+// Import Data
+import spData from '../../scripts/SP500.json';
+import ftseData from '../../scripts/FTSE.json';
+import trumpData from '../../scripts/formattedTrump.json'
+import vixData from '../../scripts/VIXCLS.json';
+import nasdaqData from '../../scripts/NASDAQCOM.json';
+import tnyrData from '../../scripts/DGS10.json';
+import djiaData from '../../scripts/DJIA.json';
+import crudeoilData from '../../scripts/DCOILWTICO.json';
+import euroData from '../../scripts/DEXUSEU.json';
+import yenData from '../../scripts/DEXJPUS.json';
+import yuanData from '../../scripts/DEXCHUS.json';
+import {PageHeader} from 'react-bootstrap';
+
+// DO THIS: IMPORT TRUMP DATA INTO A DICT WITH DATES AS KEYS AND ARRAY OF TWEETS FOR THAT DAY AS VALUES
+var trumpTweets = {} // <----
+trumpData.forEach((day) => {
+  trumpTweets[new Date(day.date)] = day.tweets
+});
+
+function searchTweets(text) {
+  var ret = []
+  trumpData.forEach((day) => {
+    if(day.tweets.includes(text)){
+      ret.append(new Date(day.date))
+    }
+  })
+  return ret
+}
+
+const testTweetData = ["Hi my name", "Where r u going", "second sex", "fake news"];
+const dataSet = {"SP500":spData,
+                 "FTSE": ftseData,
+                 "CBOE Volatility Index": vixData,
+                 "NASDAQ": nasdaqData,
+                 "10-Yr Treasury Rate": tnyrData,
+                 "DJIA": djiaData,
+                 "Crude Oil": crudeoilData,
+                 "US/Euro Exchange Rate": euroData,
+                 "Yen/US Exchange Rate": yenData,
+                 "Yuan/US Exchange Rate": yuanData}; /// <-- ADD REMAINING DATA SETS HERE
+// const dataSet = {"SP500":spData,
+//                  "FTSE": ftseData};
+const startDate = new Date("2017-01-20");
+
+// console.log(startDate)
+// console.log(trumpTweets)
+
+class RootComponent extends React.Component {
+  constructor(props){
+    super(props)
+    this.state = {curIndex: this.props.initIndex,
+                  indexes: Object.keys(dataSet),
+                  data: dataSet[this.props.initIndex],
+                  curDate: startDate,
+                  searchText: ''};
+  }
+
+  render() {
+    //console.log(trumpTweets[this.state.curDate])
+    const margin = {top:10, bottom:10, left:10, right:10};
+    return (
+      <div className="flex center flex-column">
+        <PageHeader>Mapping Trumps Tweets to Stock Exchanges</PageHeader>
+        <div className="d-inline">
+          <Dropdown changeIndex={index => this.setState({curIndex: index, data: dataSet[index]})}
+                    curIndex={this.state.curIndex} indexes={this.state.indexes}/>
+        </div>
+        <div className="d-inline">
+          <SearchBar changeText={text => this.setState({searchText: text})} />
+        </div>
+        <svg height="50" />
+        <div className = "rowC">
+          <TweetDisplay text={this.state.searchText} tweetsTest={trumpTweets[this.state.curDate]} tweets={trumpTweets[this.state.curDate]}/>
+          <BarChart margin={margin}
+                  data={this.state.data}
+                  width={1000} height={500}
+                  index={this.state.curIndex}
+                  searchText={this.state.searchText}
+                  changeDate={date => this.setState({curDate: new Date(date), searchText: ''})}
+                  curDate = {this.state.curDate}/>
+        </div>
+        <svg height="300" />
+      </div>
+    );
+  }
+}
+RootComponent.displayName = 'RootComponent';
+export default RootComponent;

@@ -1,0 +1,27 @@
+import React from 'react';
+import ReactDOM from 'react-dom';
+import {BarZoom} from 'react-d3-zoom';
+
+
+import {findMinMax} from '../utils';
+
+class BarChartTest extends React.Component {
+  constructor(props){
+    super(props)
+  }
+
+
+  render() {
+
+    return (
+      <svg width={this.state.width} height={this.state.height} ref={node => this.node = node} id='test'>
+      </svg>
+    );
+  }
+}
+
+
+BarChartTest.displayName = 'BarChartTest';
+export default BarChartTest;
+
+"use strict";
